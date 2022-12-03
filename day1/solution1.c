@@ -1,4 +1,4 @@
-/* --- Day 1: Calorie Counting --- 
+/* --- Day 1: Calorie Counting ---
 
 2022 written by Ralf Herbrich
 */
@@ -7,33 +7,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXLEN  256
+#define MAXLEN 256
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     FILE *fp;
     char buffer[MAXLEN];
 
-    if (argc != 2) {
-        printf ("Usage: %s cal-file\n", argv[0]);
+    if (argc != 2)
+    {
+        printf("Usage: %s cal-file\n", argv[0]);
         return (-1);
     }
 
-    if ((fp = fopen(argv[1], "r")) != NULL) {
+    if ((fp = fopen(argv[1], "r")) != NULL)
+    {
         int max_cal = 0;
         int cur_cal_counter = 0;
 
         /* read the input file to the end */
-        while (fgets(buffer, MAXLEN - 1, fp)) {
+        while (fgets(buffer, MAXLEN - 1, fp))
+        {
             int val = atoi(buffer);
 
-            if (val == 0) {
+            if (val == 0)
+            {
                 /* check if the running tally is bigger than the current maximum */
                 if (cur_cal_counter > max_cal)
                     max_cal = cur_cal_counter;
 
                 /* reset the current calorie counter */
                 cur_cal_counter = 0;
-            } else {
+            }
+            else
+            {
                 cur_cal_counter += val;
             }
         }
@@ -43,7 +50,9 @@ int main(int argc, char *argv[]) {
 
         /* output the maximum count */
         printf("Maximum elf calories: %d\n", max_cal);
-    } else {
+    }
+    else
+    {
         printf("Problems opening file %s\n", argv[1]);
     }
 

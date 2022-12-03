@@ -49,9 +49,12 @@ int main(int argc, char *argv[])
         elf_cal[no_elves++] = cur_cal_counter;
 
         /* sort the calorie counters using bubble sort */
-        for(int i = 0; i < no_elves; i++) {
-            for (int j = i+1; j < no_elves; j++) {
-                if (elf_cal[j] > elf_cal[i]) {
+        for (int i = 0; i < no_elves; i++)
+        {
+            for (int j = i + 1; j < no_elves; j++)
+            {
+                if (elf_cal[j] > elf_cal[i])
+                {
                     int tmp = elf_cal[i];
                     elf_cal[i] = elf_cal[j];
                     elf_cal[j] = tmp;
