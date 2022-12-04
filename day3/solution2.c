@@ -8,13 +8,10 @@
 #include <string.h>
 
 #define MAXLEN 256
-#define MAX_RUCKSACKS 10000
 
 int main(int argc, char *argv[]) {
     FILE *fp;
-    char buffer[MAXLEN];
-    char *rucksack[MAX_RUCKSACKS];
-    int no_rucksacks = 0;
+    char buffer[3][MAXLEN];
 
     if (argc != 2) {
         printf("Usage: %s ruck-file\n", argv[0]);
@@ -22,46 +19,38 @@ int main(int argc, char *argv[]) {
     }
 
     if ((fp = fopen(argv[1], "r")) != NULL) {
-        /* read the input file to the end */
-        while (fgets(buffer, MAXLEN - 1, fp)) {
-            /* remove trailing whitespaces */
-            int i;
-            for (i = strlen(buffer) - 1; i >= 0; i--) {
-                if (buffer[i] != ' ' && buffer[i] != '\r' && buffer[i] != '\n' && buffer[i] != '\t')
-                    break;
+        /* read the input file to the end and compute the score across all rucksacks */
+        int score = 0;
+        while (fgets(buffer[0], MAXLEN - 1, fp)) {
+            /* read the next two lines for the block-of-three */
+            if (fgets(buffer[1], MAXLEN - 1, fp) == 0 || fgets(buffer[2], MAXLEN - 1, fp) == 0) {
+                printf ("Number of rucksacks must be a multiple of three.\n");
+                return (-4);
             }
-            buffer[i+1] = '\0';
 
-            /* check for validity of inputs */
-            if (strlen(buffer) % 2 != 0) {
-                printf("Incorrect format in line %d (number of items is odd)\n", no_rucksacks);
-                return (-1);
-            }
-            for (char *p = buffer; *p; p++) {
-                if (!((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z'))) {
-                    printf("Invalid character %c in the string on line %d\n", *p, no_rucksacks);
-                    return (-2);
+            /* pre-process and validate all three rucksacks */
+            for(int k = 0; k < 3; k++) {
+                /* remove trailing whitespaces */
+                int i;
+                for (i = strlen(buffer[k]) - 1; i >= 0; i--) {
+                    if (buffer[k][i] != ' ' && buffer[k][i] != '\r' && buffer[k][i] != '\n' && buffer[k][i] != '\t')
+                        break;
+                }
+                buffer[k][i+1] = '\0';
+
+                /* check for validity of inputs */
+                if (strlen(buffer[k]) % 2 != 0) {
+                    printf("Incorrect format in line '%s' (number of items is odd)\n", buffer[k]);
+                    return (-1);
+                }
+                for (char *p = buffer[k]; *p; p++) {
+                    if (!((*p >= 'A' && *p <= 'Z') || (*p >= 'a' && *p <= 'z'))) {
+                        printf("Invalid character %c in the string on line '%s'\n", *p, buffer[k]);
+                        return (-2);
+                    }
                 }
             }
 
-            /* copy the rucksack string */
-            rucksack[no_rucksacks] = (char *)malloc(strlen(buffer) + 1);
-            strcpy(rucksack[no_rucksacks], buffer);
-
-            if (++no_rucksacks == MAX_RUCKSACKS) {
-                printf("Input file too long.\n");
-                return (-3);
-            }
-        }
-        if (no_rucksacks % 3 != 0) {
-            printf ("Number of rucksacks must be a multiple of three.\n");
-            return (-4);
-        }
-        printf("[%d rucksacks read from file]\n", no_rucksacks);
-
-        /* compute the score across all rucksacks */
-        int score = 0;
-        for (int i = 0; i < no_rucksacks / 3; i++) {
             int used_cnt[256];
 
             /* set each letter to used zero times (in fact, the whole ASCII set) */
@@ -75,8 +64,8 @@ int main(int argc, char *argv[]) {
                 for (int j = 0; j < 256; j++) used[j] = 0;
 
                 /* now first set all the letters used in the first half of the rucksack */
-                for (int l = 0; l < strlen(rucksack[i*3 + k]); l++)
-                    used[rucksack[i*3 + k][l]] = 1;
+                for (int l = 0; l < strlen(buffer[k]); l++)
+                    used[buffer[k][l]] = 1;
 
                 /* now increment the used count for all used letters */
                 for (int j = 0; j < 256; j++) used_cnt[j] += used[j];
@@ -100,10 +89,6 @@ int main(int argc, char *argv[]) {
             score += (badge_item >= 'A' && badge_item <= 'Z') ? (badge_item - 'A' + 27) : (badge_item - 'a' + 1);
         }
         printf("Score: %d\n", score);
-
-        for (int i = 0; i < no_rucksacks; i++) {
-            free(rucksack[i]);
-        }
     } else {
         printf("Problems opening file %s\n", argv[1]);
     }

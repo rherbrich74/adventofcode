@@ -8,14 +8,10 @@
 #include <string.h>
 
 #define MAXLEN 256
-#define MAX_MOVES 10000
 
 int main(int argc, char *argv[]) {
     FILE *fp;
     char buffer[MAXLEN];
-    char opp_move[MAX_MOVES];
-    char outcome[MAX_MOVES];
-    int no_moves = 0;
 
     if (argc != 2) {
         printf("Usage: %s rps-file\n", argv[0]);
@@ -23,10 +19,11 @@ int main(int argc, char *argv[]) {
     }
 
     if ((fp = fopen(argv[1], "r")) != NULL) {
-        /* read the input file to the end */
+        /* read the input file to the end and compute the score across all moves */
+        int score = 0;
         while (fgets(buffer, MAXLEN - 1, fp)) {
             if (strlen(buffer) < 3) {
-                printf("Incorrect format in line %d\n", no_moves);
+                printf("Incorrect format in line: '%s'\n", buffer);
                 return (-1);
             }
             if (buffer[0] != 'A' && buffer[0] != 'B' && buffer[0] != 'C') {
@@ -37,21 +34,10 @@ int main(int argc, char *argv[]) {
                 printf("Incorrect format: Outcome should be one of 'X', 'Y', and 'Z'.\n");
                 return (-3);
             }
-            opp_move[no_moves] = buffer[0] - 'A';
-            outcome[no_moves] = buffer[2] - 'X';
-
-            if (++no_moves == MAX_MOVES) {
-                printf("Input file too long.\n");
-                return (-4);
-            }
-        }
-
-        /* compute the score across all moves */
-        int score = 0;
-        for (int i = 0; i < no_moves; i++) {
-            int opp = opp_move[i];
+            int opp = buffer[0] - 'A';
+            int outcome = buffer[2] - 'X';
             int me;
-            switch (outcome[i]) {
+            switch (outcome) {
                 case 0:
                     me = (opp == 0) ? 2 : ((opp == 1) ? 0 : 1);
                     break;
@@ -65,7 +51,7 @@ int main(int argc, char *argv[]) {
                     printf("Internal error\n");
             }
 
-            int outcome_score = outcome[i] * 3;
+            int outcome_score = outcome * 3;
             int shape_score = me + 1;
             score += (outcome_score + shape_score);
         }
