@@ -42,24 +42,23 @@ int main(int argc, char *argv[]) {
                 int s = strlen(buffer) / 4;
                 if (no_stacks == -1) {
                     if (s > MAX_STACKS - 1) {
-                        printf ("Not enough storage for the actual number of stacks\n");
+                        printf("Not enough storage for the actual number of stacks\n");
                         return (-2);
                     }
                     no_stacks = s;
-                }
-                else {
+                } else {
                     if (s != no_stacks) {
-                        printf ("Internal error: different number of stacks across lines\n");
+                        printf("Internal error: different number of stacks across lines\n");
                         return (-3);
                     }
                 }
 
                 for (int i = 0; i < no_stacks; i++) {
-                    if (buffer[i*4] == '[') {
-                        stacks[i+1][stack_height[i+1]++] = buffer[i*4+1];
+                    if (buffer[i * 4] == '[') {
+                        stacks[i + 1][stack_height[i + 1]++] = buffer[i * 4 + 1];
                     } else {
-                        if (stack_height[i+1] != 0) {
-                            printf("Internal error: Stack %d has a hole\n", i+1);
+                        if (stack_height[i + 1] != 0) {
+                            printf("Internal error: Stack %d has a hole\n", i + 1);
                             return (-4);
                         }
                     }
@@ -86,13 +85,14 @@ int main(int argc, char *argv[]) {
         while (fgets(buffer, MAXLEN - 1, fp)) {
             int cnt, from, to;
             if (sscanf(buffer, "move %d from %d to %d", &cnt, &from, &to) != 3) {
-                printf ("Wrong format of move list\n");
+                printf("Wrong format of move list\n");
                 return (-5);
             }
 
-            /* move one crate one-by-one */
+            /* move all crates at once */
             for (int j = 0; j < cnt; j++)
-                stacks[to][stack_height[to]++] = stacks[from][--stack_height[from]];
+                stacks[to][stack_height[to]++] = stacks[from][stack_height[from] - cnt + j];
+            stack_height[from] -= cnt;
         }
 
         /* print the final head pieces as a string */
