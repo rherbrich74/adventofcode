@@ -10,15 +10,14 @@
 #define MAXLEN 256
 
 /* state variables of the simple VM */
-static int no_cycles = 1;
+static int no_cycles = 0;
 static int x = 1;
 
 /* increases the cycle count by one and plots a pixel */
 void tick() {
-    int column = (no_cycles - 1) % 40;
+    int column = no_cycles % 40;
     printf("%c", (column == x - 1 || column == x || column == x + 1) ? '#' : '.');
-    no_cycles++;
-    if ((no_cycles - 1) % 40 == 0)
+    if (++no_cycles % 40 == 0)
         printf("\n");
     return;
 }
