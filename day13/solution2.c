@@ -146,6 +146,9 @@ int compare_intList(intList *il1, intList *il2) {
 int main(int argc, char *argv[]) {
     FILE *fp;
     char buffer[MAXLEN];
+    intList **ils;
+    int no_ils = 0;
+    int ils_size = 1;
 
     /* argument check */
     if (argc != 2) {
@@ -154,35 +157,69 @@ int main(int argc, char *argv[]) {
     }
 
     if ((fp = fopen(argv[1], "r")) != NULL) {
-        int pair_idx = 1;
-        int score = 0;
+        /* allocate the two comparator lists */
+        intList *two_list = new_intList();
+        intList *tmp_list = new_intList();
+        add_intList(tmp_list, new_intList_from_int(2));
+        add_intList(two_list, tmp_list);
+
+        intList *six_list = new_intList();
+        tmp_list = new_intList();
+        add_intList(tmp_list, new_intList_from_int(6));
+        add_intList(six_list, tmp_list);
+        
+        /* count the number of lists which are smaller than the two-list and six-list */
+        int two_list_idx = 0;
+        int six_list_idx = 0;
+
+        /* read the integer lists one-by-one */
         while (fgets(buffer, MAXLEN - 1, fp)) {
-            /* read the two integer lists one-by-one */
+            /* read the next int list */
             int s = 0;
-            intList *il1 = parse_intList(buffer, &s);
+            intList *il = parse_intList(buffer, &s);
+
+            /* compare if the list is before the two-list and increment index counter */
+            if(compare_intList(il, two_list) > 0)
+                two_list_idx++;
+            /* compare if the list is before the six-list and increment index counter */
+            if(compare_intList(il, six_list) > 0)
+                six_list_idx++;
+
+            /* free memory */
+            delete_intList(il);
+            free(il);
+
+            /* read the next int list */
             if (!fgets(buffer, MAXLEN - 1, fp)) {
-                printf("Expected a second string (%d) after\n", pair_idx);
-                print_intList(il1);
+                printf("Expected a second string after\n");
+                print_intList(il);
                 printf("\n");
                 return (-2);
             }
             s = 0;
-            intList *il2 = parse_intList(buffer, &s);
+            il = parse_intList(buffer, &s);
+
+            /* compare if the list is before the two-list and increment index counter */
+            if(compare_intList(il, two_list) > 0)
+                two_list_idx++;
+            /* compare if the list is before the six-list and increment index counter */
+            if(compare_intList(il, six_list) > 0)
+                six_list_idx++;
+
+            /* free memory */
+            delete_intList(il);
+            free(il);
+
             fgets(buffer, MAXLEN - 1, fp);
-
-            /* compare the lists and increment the score, as necessary */
-            if (compare_intList(il1, il2) > 0)
-                score += pair_idx;
-            pair_idx++;
-
-            /* free the memory for the integer lists */
-            delete_intList(il1);
-            delete_intList(il2);
-            free(il1);
-            free(il2);
         }
 
-        printf("Score: %d\n", score);
+        printf("Score: %d\n", (two_list_idx + 1) * (six_list_idx + 2));
+
+        /* free all the memory for the integer lists */
+        delete_intList(two_list);
+        delete_intList(six_list);
+        free(two_list);
+        free(six_list);
     } else {
         printf("Problems opening file %s\n", argv[1]);
     }
