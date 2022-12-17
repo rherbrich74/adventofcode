@@ -69,14 +69,18 @@ intList *parse_intList(const char *buffer, int *start_pos) {
         case '[':
             /* if the list starts with square brackets ... */
             il = new_intList();
-            do {
-                /* ... then parse the list until the next character is not a separating comma */
+            if(buffer[(*start_pos)+1] != ']') { 
+                do {
+                    /* ... then parse the list until the next character is not a separating comma */
+                    (*start_pos)++;
+                    add_intList(il, parse_intList(buffer, start_pos));
+                } while (buffer[*start_pos] == ',');
+                if (buffer[*start_pos] != ']') {
+                    printf("] expect at %s\n", &(buffer[*start_pos]));
+                    exit(-2);
+                }
+            } else {
                 (*start_pos)++;
-                add_intList(il, parse_intList(buffer, start_pos));
-            } while (buffer[*start_pos] == ',');
-            if (buffer[*start_pos] != ']') {
-                printf("] expect at %s\n", &(buffer[*start_pos]));
-                exit(-2);
             }
             (*start_pos)++;
             break;
@@ -150,14 +154,26 @@ int main(int argc, char *argv[]) {
     }
 
     if ((fp = fopen(argv[1], "r")) != NULL) {
-        int s = 0;
-        intList *il1 = parse_intList("[1,[1,2,[4,5,6]],3,1,1]", &s);
-        s = 0;
-        intList *il2 = parse_intList("[[1],[1,2,[4,5,6]],3,1,1]", &s);
-        print_intList(il1);
-        printf("\n");
-        print_intList(il2);
-        printf("\n%d\n", compare_intList(il1, il2));
+        int pair_idx = 1;
+        int score = 0;
+        while(fgets(buffer, MAXLEN - 1, fp)) {
+            int s = 0;
+            intList *il1 = parse_intList(buffer, &s);
+            if(!fgets(buffer, MAXLEN - 1, fp)) {
+                printf("Expected a second string (%d) after\n", pair_idx);
+                print_intList(il1);
+                printf("\n");
+                return(-2);
+            }
+            s = 0;
+            intList *il2 = parse_intList(buffer, &s);
+            fgets(buffer, MAXLEN - 1, fp);
+            if(compare_intList(il1, il2) > 0) 
+                score += pair_idx;
+            pair_idx++;
+        }
+
+        printf("Score: %d\n", score);
     } else {
         printf("Problems opening file %s\n", argv[1]);
     }
