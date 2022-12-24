@@ -133,7 +133,6 @@ void delete_map(map_elem_t **map) {
 /* main entry point of the program */
 int main(int argc, char *argv[]) {
     FILE *fp;
-    char buffer[MAXLEN];
 
     /* argument check */
     if (argc != 2) {
