@@ -112,8 +112,8 @@ typedef struct monkeyProgram_ {
     monkeyOp op;             /* operation in each cycle */
     int op_value;            /* additional const value of the monkey operation */
     int divisible_test;      /* the number that the worry level needs to be divisible by */
-    int target_money_true;   /* monkey that receives the items when the test is true */
-    int target_money_false;  /* monkey that receives the items when the test is false */
+    int target_monkey_true;  /* monkey that receives the items when the test is true */
+    int target_monkey_false; /* monkey that receives the items when the test is false */
 } monkeyProgram;
 
 /* defines a monkey state */
@@ -173,11 +173,11 @@ monkeyProgram *read_monkey_program(FILE *fp) {
     }
 
     /* parse the 'then' and 'else' branch of the test */
-    if (fscanf(fp, "    If true: throw to monkey %d\n", &prog->target_money_true) != 1) {
+    if (fscanf(fp, "    If true: throw to monkey %d\n", &prog->target_monkey_true) != 1) {
         printf("Expecting a target monkey when test is true\n");
         exit(-7);
     }
-    if (fscanf(fp, "    If false: throw to monkey %d\n", &prog->target_money_false) != 1) {
+    if (fscanf(fp, "    If false: throw to monkey %d\n", &prog->target_monkey_false) != 1) {
         printf("Expecting a target monkey when test is false\n");
         exit(-8);
     }
@@ -224,8 +224,8 @@ void print_monkey_program(monkeyProgram *prog) {
     printf("  Test: divisible by %d\n", prog->divisible_test);
 
     /* ... and the 'then' and 'else' branch of the test */
-    printf("    If true: throw to monkey %d\n", prog->target_money_true);
-    printf("    If false: throw to monkey %d\n", prog->target_money_false);
+    printf("    If true: throw to monkey %d\n", prog->target_monkey_true);
+    printf("    If false: throw to monkey %d\n", prog->target_monkey_false);
 
     return;
 }
@@ -247,9 +247,9 @@ void run_monkey_program(monkeyProgram *prog, monkeyState **states) {
         }
         item /= 3;
         if(item % prog->divisible_test) 
-            add_elem_intList(states[prog->target_money_false]->items, item);
+            add_elem_intList(states[prog->target_monkey_false]->items, item);
         else
-            add_elem_intList(states[prog->target_money_true]->items, item);
+            add_elem_intList(states[prog->target_monkey_true]->items, item);
     }
     delete_intList(states[prog->index]->items);
 
