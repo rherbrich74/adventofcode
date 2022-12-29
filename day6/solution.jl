@@ -30,7 +30,7 @@ end
 
 # main entry of the program
 if (length(ARGS) != 2)
-    println("usage: solution [1|2] <rps-file>")
+    println("usage: solution [1|2] <msg-file>")
     exit(-1)
 end
 
