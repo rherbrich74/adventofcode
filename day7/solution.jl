@@ -77,7 +77,6 @@ function solution(file_name, solution_no)
         line = readline(file)
         root = read_dir(line, file)
         
-
         if (solution_no == 1)
             println("Score = ", filter(x -> x < 100000, get_dirs_with_total_size(root)) |> sum)
         else
