@@ -29,7 +29,6 @@ function solution(file_name, solution_no)
         # and now adjust the numbers for the base {2,1,0,-1,-2}
         int_snafu_number = Vector{Int}()
         carry = 0
-        # println(int5_number)
         for i in (int5_number) 
             if ((i + carry) <= 2)
                 push!(int_snafu_number, i + carry)
