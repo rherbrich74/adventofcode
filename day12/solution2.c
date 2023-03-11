@@ -26,8 +26,8 @@ int main(int argc, char *argv[]) {
 
     if ((fp = fopen(argv[1], "r")) != NULL) {
         /* read the map line-by-line */
-        int n; /* number of rows of the map */
-        int m; /* number of columns of the map */
+        int n;                              /* number of rows of the map */
+        int m;                              /* number of columns of the map */
         int x_start, y_start, x_end, y_end; /* store the coordinates of the start or finish */
         for (n = 0; fgets(buffer, MAXLEN - 1, fp); n++) {
             for (m = 0; (buffer[m] >= 'a' && buffer[m] <= 'z') || (buffer[m] == 'E') || (buffer[m] == 'S'); m++) {
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         int *distance = (int *)malloc(sizeof(int) * N);
         char *visited = (char *)malloc(sizeof(char) * N);
 
-        /* initialize the distance map */
+        /* initialize the distance map (but with walking backwards distances)*/
         for (int from = 0; from < N; from++)
             for (int to = 0; to < N; to++)
                 if (from == to) {
@@ -63,45 +63,44 @@ int main(int argc, char *argv[]) {
                     int x_to = to % m, y_to = to / m;
                     cost[from][to] = N; /* this is larger than the maximum distance on an nxm map */
                     if ((abs(x_from - x_to) == 1 && y_from == y_to) || (abs(y_from - y_to) == 1 && x_from == x_to))
-                        if (map[y_to][x_to] - map[y_from][x_from] <= 1) 
+                        if (map[y_from][x_from] - map[y_to][x_to] <= 1)
                             cost[from][to] = 1;
                 }
 
-        /* scan over all possible starting positions */
-        int shortest_path = N;
-        for(int x_start=0; x_start<m; x_start++)
-            for(int y_start=0; y_start<n; y_start++)
-                if(map[y_start][x_start] == 'a') {
-                    /* initialize the shortest-distance vector and visited vector */
-                    for (int i = 0; i < N; i++) {
-                        distance[i] = cost[y_start * m + x_start][i];
-                        visited[i] = 0;
-                    }
-                    // distance[y_start * m + x_start] = 0;
-                    visited[y_start * m + x_start] = 1;
+        /* initialize the shortest-distance vector and visited vector (starting from the end) */
+        for (int i = 0; i < N; i++) {
+            distance[i] = cost[y_end * m + x_end][i];
+            visited[i] = 0;
+        }
+        distance[y_end * m + x_end] = 0;
+        visited[y_end * m + x_end] = 1;
 
-                    for (int k = 0; k < N; k++) {
-                        /* determine the next not-visited node to consider */
-                        int min_distance = N;
-                        int next_node;
-                        for (int j = 0; j < N; j++)
-                            if (!visited[j] && distance[j] < min_distance) {
-                                min_distance = distance[j];
-                                next_node = j;
-                            }
-
-                        // check if a better path exists through next_node
-                        visited[next_node] = 1;
-                        for (int j = 0; j < N; j++)
-                            if (!visited[j] && min_distance + cost[next_node][j] < distance[j]) {
-                                distance[j] = min_distance + cost[next_node][j];
-                            }
-                    }
-
-                    shortest_path = (distance[y_end * m + x_end] < shortest_path) ? distance[y_end * m + x_end] : shortest_path;
+        for (int k = 0; k < N; k++) {
+            /* determine the next not-visited node to consider */
+            int min_distance = N;
+            int next_node;
+            for (int j = 0; j < N; j++)
+                if (!visited[j] && distance[j] < min_distance) {
+                    min_distance = distance[j];
+                    next_node = j;
                 }
 
+            // check if a better path exists through next_node
+            visited[next_node] = 1;
+            for (int j = 0; j < N; j++)
+                if (!visited[j] && min_distance + cost[next_node][j] < distance[j]) {
+                    distance[j] = min_distance + cost[next_node][j];
+                }
+        }
+
         /* extract the length of the shortest path from both start to finish */
+        int shortest_path = N;
+        for (int x_start = 0; x_start < m; x_start++)
+            for (int y_start = 0; y_start < n; y_start++)
+                if (map[y_start][x_start] == 'a') {
+                    shortest_path = (distance[y_start * m + x_start] < shortest_path) ? distance[y_start * m + x_start] : shortest_path;
+                }
+
         printf("Shortest path: %d\n", shortest_path);
 
         /* free memory */
