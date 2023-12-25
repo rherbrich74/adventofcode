@@ -10,33 +10,30 @@ use std::io::BufReader;
 // solution for the first part of the puzzle
 fn part1() {
     // read a file named "input.txt" line by line
-    let file = File::open("input.txt").unwrap();
-    let reader = BufReader::new(file);
-
-    let mut sum = 0;
+    let reader = match File::open("input.txt") {
+        Ok(file) => BufReader::new(file),
+        Err(error) => panic!("Problem opening the file: {:?}", error),
+    };
 
     // read the file f line by line into input
-    for l in reader.lines() {
-        let str = l.unwrap();
+    let sum : u32 = reader.lines()
+        .map(|l| {
+            let str = l.unwrap();
 
-        let mut first = 0;
-        let mut last = 0;
-
-        for c in str.chars() {
-            if c >= '0' && c <= '9' {
-                first = char::to_digit(c, 10).unwrap();
-                break;
-            }
-        }
-        for c in str.chars().rev() {
-            if c >= '0' && c <= '9' {
-                last = char::to_digit(c, 10).unwrap();
-                break;
-            }
-        }
-
-        sum += first * 10 + last;
-    }
+            let first = str.chars()
+                .find(|c| c.is_ascii_digit())
+                .unwrap()
+                .to_digit(10)
+                .unwrap();
+            let last = str.chars()
+                .rev()
+                .find(|c| c.is_ascii_digit())
+                .unwrap()
+                .to_digit(10)
+                .unwrap();
+            first * 10 + last
+        })
+        .sum();
 
     println!("sum: {}", sum);
 }
@@ -44,85 +41,41 @@ fn part1() {
 // solution for the second part of the puzzle
 fn part2() {
     const PATTERNS: [(&str, u32); 20] = [
-        ("0", 0),
-        ("1", 1),
-        ("2", 2),
-        ("3", 3),
-        ("4", 4),
-        ("5", 5),
-        ("6", 6),
-        ("7", 7),
-        ("8", 8),
-        ("9", 9),
-        ("zero", 0),
-        ("one", 1),
-        ("two", 2),
-        ("three", 3),
-        ("four", 4),
-        ("five", 5),
-        ("six", 6),
-        ("seven", 7),
-        ("eight", 8),
-        ("nine", 9),
+        ("0", 0), ("1", 1), ("2", 2), ("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7), ("8", 8), ("9", 9),
+        ("zero", 0), ("one", 1), ("two", 2), ("three", 3), ("four", 4), ("five", 5), ("six", 6), ("seven", 7), ("eight", 8), ("nine", 9),
     ];
 
-    const PATTERNS_REV: [(&str, u32); 20] = [
-        ("0", 0),
-        ("1", 1),
-        ("2", 2),
-        ("3", 3),
-        ("4", 4),
-        ("5", 5),
-        ("6", 6),
-        ("7", 7),
-        ("8", 8),
-        ("9", 9),
-        ("orez", 0),
-        ("eno", 1),
-        ("owt", 2),
-        ("eerht", 3),
-        ("ruof", 4),
-        ("evif", 5),
-        ("xis", 6),
-        ("neves", 7),
-        ("thgie", 8),
-        ("enin", 9),
-    ];
+    // find the pattern in the string and return the corresponding number
+    fn find_pattern(str: &str, i:usize, patterns: &[(&str, u32)]) -> Option<u32> {
+        for p in patterns.iter() {
+            if str[i..].starts_with(p.0) {
+                return Some(p.1);
+            }
+        }
+        None
+    }
 
     // read a file named "input.txt" line by line
-    let file = File::open("input.txt").unwrap();
-    let reader = BufReader::new(file);
-
-    let mut sum = 0;
+    let reader = match File::open("input.txt") {
+        Ok(file) => BufReader::new(file),
+        Err(error) => panic!("Problem opening the file: {:?}", error),
+    };
 
     // read the file f line by line into input
-    for l in reader.lines() {
-        let str = l.unwrap();
+    let sum : u32 = reader.lines()
+        .map(|l| {
+            let str = l.unwrap();
 
-        let mut first = 0;
-        let mut last = 0;
-
-        'outer: for (i, _) in str.chars().enumerate() {
-            for p in PATTERNS.iter() {
-                if i + p.0.len() <= str.len() && p.0 == str[i..i + p.0.len()].to_string() {
-                    first = p.1;
-                    break 'outer;
-                }
-            }
-        }
-
-        let rev_str = str.chars().rev().collect::<String>();
-        'outer2: for (i, _) in rev_str.chars().enumerate() {
-            for p in PATTERNS_REV.iter() {
-                if i + p.0.len() <= rev_str.len() && p.0 == rev_str[i..i + p.0.len()].to_string() {
-                    last = p.1;
-                    break 'outer2;
-                }
-            }
-        }
-
-        sum += first * 10 + last;
-    }
+            let first = (0..str.len())
+                .find_map(|i| find_pattern(&str, i, &PATTERNS))
+                .unwrap();
+            let last = (0..str.len())
+                .rev()
+                .find_map(|i| find_pattern(&str, i, &PATTERNS))
+                .unwrap();
+            first * 10 + last
+        })
+        .sum();
 
     println!("sum: {}", sum);
 }
