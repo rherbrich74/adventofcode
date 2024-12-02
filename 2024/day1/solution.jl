@@ -12,7 +12,7 @@ function read_input(filename)
             id1, id2 = parse.(Int, split(line, "   "))
             push!(id1s, id1)
             push!(id2s, id2)
-            end
+        end
         return id1s, id2s
     end
 end
