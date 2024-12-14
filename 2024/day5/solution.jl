@@ -27,19 +27,7 @@ function read_input(filename)
                 successor = parse(Int, m.captures[2])
 
                 rules.order[predecessor, successor] = true
-                # # add a predecessor rule
-                # if !haskey(rules.predecessors, successor)
-                #     rules.predecessors[successor] = Vector{Int}()
-                # end
-                # push!(rules.predecessors[successor], predecessor)
-
-                # # add a successor rule
-                # if !haskey(rules.successors, predecessor)
-                #     rules.successors[predecessor] = Vector{Int}()
-                # end
-                # push!(rules.successors[predecessor], successor)
             elseif (length(line) > 0)
-                # println(split(line, ","))
                 push!(production, map(x -> parse(Int, x), split(line, ",")))
             end
         end
@@ -47,43 +35,74 @@ function read_input(filename)
     end
 end
 
+# checks that the page list obeys the production rules
+function check_validity(pages, rules)
+    for i in eachindex(pages)
+        # check that all pages before are in the predecessor list
+        for j = 1:(i-1)
+            if !rules.order[pages[j], pages[i]]
+                return false
+            end
+        end
+
+        # check that all pages after are in the successor list
+        for j = (i+1):length(pages)
+            if !rules.order[pages[i], pages[j]]
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+# fixes the page order so that the production rules are obeyed
+function fix_validity(pages, rules)
+    for i in eachindex(pages)
+        # check that all pages before are in the predecessor list; if not, swap them
+        for j = 1:(i-1)
+            if !rules.order[pages[j], pages[i]]
+                pages[j], pages[i] = pages[i], pages[j]
+            end
+        end
+
+        # check that all pages after are in the successor list; if not, swap them
+        for j = (i+1):length(pages)
+            if !rules.order[pages[i], pages[j]]
+                pages[j], pages[i] = pages[i], pages[j]
+            end
+        end
+    end
+
+    return pages
+end
+
 # solves the first part of the puzzle
 function solution1(rules, production)
-    # checks that the page list obeys the production rules
-    function check_validity(pages)
-        for i in eachindex(pages)
-            # check that all pages before are in the predecessor list
-            for j = 1:(i-1)
-                if !rules.order[pages[j], pages[i]]
-                    return false
-                end
-            end
-
-            # check that all pages after are in the successor list
-            for j = (i+1):length(pages)
-                if !rules.order[pages[i], pages[j]]
-                    return false
-                end
-            end
-        end
-    end
-
+    sum = 0
     for pages in production
-        if (check_validity(pages))
-            println("VALID: ", pages)
-        else
-            println("NOT VALID: ", pages)
+        if (check_validity(pages, rules))
+            sum += pages[length(pages) ÷ 2 + 1]
         end
     end
+
+    return sum
 end
 
 # solves the second part of the puzzle
 function solution2(rules, production)
+    sum = 0
+    for pages in production
+        if (!check_validity(pages, rules))
+            fixed_pages = fix_validity(pages, rules)
+            sum += pages[length(fixed_pages) ÷ 2 + 1]
+        end
+    end
+
+    return sum
 end
 
-rules, production = read_input("/Users/rherbrich/src/adventofcode/2024/day5/test.txt")
-
-println(rules)
+rules, production = read_input("/Users/rherbrich/src/adventofcode/2024/day5/input.txt")
 
 println("Solution 1 = ", solution1(rules, production))
 println("Solution 2 = ", solution2(rules, production))
