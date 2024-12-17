@@ -12,18 +12,54 @@ end
 
 # solves the first part of the puzzle
 function solution1(compressed)
+    # decompresses the compressed string
     function decompress(compressed)
-        output = ""
-        for file_id in 1:length(compressed)/2
+        output = Array{String}(undef, 0)
+        for file_id in 1:length(compressed)÷2
             # repeat string(file_id) compressed[2*i-1] many times
-            output *= repeat(string(file_id - 1), compressed[2*file_id-1])
+            for _ = 1:parse(Int, compressed[2*file_id-1])
+                push!(output, string(file_id - 1))
+            end
             # repeat '.' compressed[2*i] many times
-            output *= repeat(".", compressed[2*file_id])
+            for _ = 1:parse(Int, compressed[2*file_id])
+                push!(output, ".")
+            end
+        end
+        # repeat string(file_id) compressed[2*i-1] many times
+        for _ = 1:parse(Int, compressed[end])
+            push!(output, string(length(compressed)÷2))
         end
         return output
     end
 
-    println("Decompressed = ", decompress(compressed))
+    # pack the decompressed string
+    function pack(decompressed)
+        packed = collect(decompressed)
+        i = 1
+        j = length(packed)
+
+        while i < j
+            if packed[i] == '.'
+                packed[i], packed[j] = packed[j], packed[i]
+
+                while packed[j] == '.' && i < j
+                    j -= 1
+                end
+            end
+            i += 1
+        end
+        println("i = ", i, " j = ", j)
+
+        return String(packed[1:i])
+    end
+
+    # computes the checksum
+    function checksum(packed)
+    end
+
+    decompressed = decompress(compressed)
+    println("Decompressed = ", length(decompress(compressed)))
+    # println("Packed = ", pack(decompress(compressed)))
 end
 
 # solves the second part of the puzzle
@@ -32,7 +68,7 @@ end
 
 compressed = read_input("/Users/rherbrich/src/adventofcode/2024/day9/test.txt")
 
-println("Compressed = ", compressed)
+# println("Compressed = ", compressed)
 
 println("Solution 1 = ", solution1(compressed))
 println("Solution 2 = ", solution2(compressed))
