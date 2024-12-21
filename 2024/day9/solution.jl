@@ -1,4 +1,4 @@
-# Solves the first day of the Advent of Code 2024
+# Solves the ninth day of the Advent of Code 2024
 #
 # 2024 by Ralf Herbrich
 # Hasso Plattner Institute, University of Potsdam, Germany
