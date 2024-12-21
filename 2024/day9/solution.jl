@@ -88,49 +88,76 @@ function solution2(compressed)
         return output
     end
 
-    # pack the decompressed file blocks
-    function pack(decompressed::Vector{FileBlock})
-        packed = Vector{FileBlock}()
-        i = 1
-        j = length(decompressed)
-
-        while i <= j
-            if decompressed[i].file_id != -1
-                # copy each file_id from the left
-                push!(packed, decompressed[i])
-                i += 1
+    # prints the packed file blocks
+    function print_packed(packed)
+        for p in packed
+            if p.file_id == -1
+                print(repeat(".", p.length))
             else
-                if decompressed[j].length <= decompressed[i].length
-                    push!(packed, FileBlock(decompressed[j].file_id, decompressed[j].length))
-                    
-                    # otherwise copy the file_id from the right
-                    push!(packed, decompressed[j])
-                    j -= 1
-                    while decompressed[j].file_id == -1 && i <= j
-                        j -= 1
-                    end
-                    i += 1
-                else
-                    # merge the two blocks
-                    push!(packed, FileBlock(decompressed[i].file_id, decompressed[i].length + decompressed[j].length))
-                    j -= 1
-                    i += 1
-                end
-                # otherwise copy the file_id from the right
-                push!(packed, decompressed[j])
-                j -= 1
-                while decompressed[j] == "." && i <= j
-                    j -= 1
-                end
-                i += 1
+                print(repeat(string(p.file_id), p.length))
             end
         end
+        println()
     end
 
-    println(decompress(compressed))
+    # pack the decompressed file blocks
+    function pack(decompressed::Vector{FileBlock})
+        packed = deepcopy(decompressed)
+        j = length(decompressed)
+
+        while j > 1
+            if packed[j].file_id == -1
+                # skip the blocks that are dots
+                j -= 1
+                continue
+            else
+                for i in 1:j
+                    if packed[i].file_id != -1
+                        continue
+                    else
+                        if packed[i].length == packed[j].length
+                            packed[i], packed[j] = packed[j], packed[i]
+                            break
+                        elseif packed[i].length > packed[j].length
+                            # insert a new element into the packed array at index i
+                            insert!(packed, i, FileBlock(packed[j].file_id, packed[j].length))
+                            packed[i+1] = FileBlock(-1, packed[i+1].length - packed[j+1].length)
+                            packed[j+1] = FileBlock(-1, packed[j+1].length)
+                            j += 1
+                            break
+                        end
+                    end
+                end
+                j -= 1
+            end
+        end
+
+        return packed
+    end
+
+    # computes the checksum
+    function checksum(packed)
+        sum = 0
+        i = 0
+        for s in packed
+            if s.file_id == -1
+                i += s.length
+            else
+                for _ in 1:s.length
+                    inc = i * s.file_id
+                    sum += inc
+                    i += 1
+                end
+            end
+        end
+
+        return sum
+    end
+
+    return checksum(pack(decompress(compressed)))
 end
 
-compressed = read_input("/Users/rherbrich/src/adventofcode/2024/day9/test.txt")
+compressed = read_input("/Users/rherbrich/src/adventofcode/2024/day9/input.txt")
 
 println("Solution 1 = ", solution1(compressed))
 println("Solution 2 = ", solution2(compressed))
