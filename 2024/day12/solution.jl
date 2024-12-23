@@ -1,0 +1,210 @@
+# Solves the twelth day of the Advent of Code 2024
+#
+# 2024 by Ralf Herbrich
+# Hasso Plattner Institute, University of Potsdam, Germany
+
+# reads the input data from a file
+function read_input(filename)
+    open(filename) do file
+        data = readlines(file)
+        map = Matrix{Char}(undef, length(data), length(data[1]))
+        for (i, line) in enumerate(data)
+            for (j, c) in enumerate(line)
+                map[i, j] = c
+            end
+        end
+        return map
+    end
+end
+
+# solves the first part of the puzzle
+function solution1(map)
+    # determines the unique area characters in the map
+    function get_unique_labels(map)
+        labels = Set{Char}()
+        for c in map
+            push!(labels, c)
+        end
+
+        return labels
+    end
+
+    # gets the price of land of label `label` on the map
+    function get_price(map, label)
+        visited = falses(size(map))
+
+        # computes the area and perimeter of the area starting at position (i, j)
+        function get_area_and_perimeter(i, j)
+            visited[i, j] = true
+
+            # determine the area for the piece of land at (i, j)
+            area = 1
+
+            # determine the perimeter for the piece of land at (i, j)
+            perimeter = 0
+            if i == 1 || map[i-1, j] != label
+                perimeter += 1
+            end
+            if i == size(map, 1) || map[i+1, j] != label
+                perimeter += 1
+            end
+            if j == 1 || map[i, j-1] != label
+                perimeter += 1
+            end
+            if j == size(map, 2) || map[i, j+1] != label
+                perimeter += 1
+            end
+    
+            if i > 1 && map[i-1, j] == label && visited[i-1, j] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i-1, j)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if i < size(map, 1) && map[i+1, j] == label && visited[i+1, j] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i+1, j)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if j > 1 && map[i, j-1] == label && visited[i, j-1] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i, j-1)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if j < size(map, 2) && map[i, j+1] == label && visited[i, j+1] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i, j+1)
+                area += other_area
+                perimeter += other_perimeter
+            end
+
+            return (area, perimeter)
+        end
+
+        price = 0
+        for i in axes(map, 1)
+            for j in axes(map, 2)
+                if map[i, j] == label && visited[i, j] == false
+                    (area, perimeter) = get_area_and_perimeter(i, j)
+                    price += area * perimeter
+                end
+            end
+        end
+
+        return price
+    end
+
+    sum = 0
+    for c in get_unique_labels(map)
+        price = get_price(map, c)
+        sum += price
+    end
+
+    return sum
+end
+
+# solves the second part of the puzzle
+function solution2(map)
+    # determines the unique area characters in the map
+    function get_unique_labels(map)
+        labels = Set{Char}()
+        for c in map
+            push!(labels, c)
+        end
+
+        return labels
+    end
+
+    # gets the price of land of label `label` on the map
+    function get_price(map, label)
+        visited = falses(size(map))
+
+        # computes the area and perimeter of the area starting at position (i, j)
+        function get_area_and_perimeter(i, j, incoming_sides)
+            visited[i, j] = true
+
+            println("get_area_and_perimeter(", i, ", ", j, ", ", incoming_sides, ")")
+
+            # determine the area for the piece of land at (i, j)
+            area = 1
+
+            # determine the perimeter for the piece of land at (i, j)
+            perimeter = 0
+            sides = Set{Symbol}()
+            if i == 1 || map[i-1, j] != label
+                push!(sides, :up)
+                if !(:up in incoming_sides)
+                    perimeter += 1
+                end
+            end
+            if i == size(map, 1) || map[i+1, j] != label
+                push!(sides, :down)
+                if !(:down in incoming_sides)
+                    perimeter += 1
+                end
+            end
+            if j == 1 || map[i, j-1] != label
+                push!(sides, :left)
+                if !(:left in incoming_sides)
+                    perimeter += 1
+                end
+
+            end
+            if j == size(map, 2) || map[i, j+1] != label
+                push!(sides, :right)
+                if !(:right in incoming_sides)
+                    perimeter += 1
+                end
+
+            end
+    
+            if i > 1 && map[i-1, j] == label && visited[i-1, j] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i-1, j, sides)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if i < size(map, 1) && map[i+1, j] == label && visited[i+1, j] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i+1, j, sides)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if j > 1 && map[i, j-1] == label && visited[i, j-1] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i, j-1, sides)
+                area += other_area
+                perimeter += other_perimeter
+            end
+            if j < size(map, 2) && map[i, j+1] == label && visited[i, j+1] == false
+                (other_area, other_perimeter) = get_area_and_perimeter(i, j+1, sides)
+                area += other_area
+                perimeter += other_perimeter
+            end
+
+            return (area, perimeter)
+        end
+
+        price = 0
+        for i in axes(map, 1)
+            for j in axes(map, 2)
+                if map[i, j] == label && visited[i, j] == false
+                    (area, perimeter) = get_area_and_perimeter(i, j, Set{Symbol}())
+                    println(label, ": ", area, " * ", perimeter, " = ", area * perimeter)
+                    price += area * perimeter
+                end
+            end
+        end
+
+        print("Price for ", label, " = ", price, "\n")
+        return price
+    end
+
+    sum = 0
+    for c in get_unique_labels(map)
+        price = get_price(map, c)
+        sum += price
+    end
+
+    return sum
+end
+
+map = read_input("/Users/rherbrich/src/adventofcode/2024/day12/test1.txt")
+
+println("Solution 1 = ", solution1(map))
+println("Solution 2 = ", solution2(map))
