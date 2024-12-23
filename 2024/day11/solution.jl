@@ -54,9 +54,6 @@ function solution(ids, depth)
     return sum
 end
 
-# solves the second part of the puzzle
-function solution2(ids)
-end
 
 ids = read_input("/Users/rherbrich/src/adventofcode/2024/day11/input.txt")
 
