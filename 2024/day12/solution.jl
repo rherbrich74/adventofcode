@@ -117,74 +117,61 @@ function solution2(map)
     function get_price(map, label)
         visited = falses(size(map))
 
-        # computes the area and perimeter of the area starting at position (i, j)
-        function get_area_and_perimeter(i, j, incoming_sides)
+        # computes the of the area starting at position (i, j)
+        function get_land(i, j)
             visited[i, j] = true
 
-            println("get_area_and_perimeter(", i, ", ", j, ", ", incoming_sides, ")")
-
-            # determine the area for the piece of land at (i, j)
-            area = 1
-
-            # determine the perimeter for the piece of land at (i, j)
-            perimeter = 0
-            sides = Set{Symbol}()
-            if i == 1 || map[i-1, j] != label
-                push!(sides, :up)
-                if !(:up in incoming_sides)
-                    perimeter += 1
-                end
-            end
-            if i == size(map, 1) || map[i+1, j] != label
-                push!(sides, :down)
-                if !(:down in incoming_sides)
-                    perimeter += 1
-                end
-            end
-            if j == 1 || map[i, j-1] != label
-                push!(sides, :left)
-                if !(:left in incoming_sides)
-                    perimeter += 1
-                end
-
-            end
-            if j == size(map, 2) || map[i, j+1] != label
-                push!(sides, :right)
-                if !(:right in incoming_sides)
-                    perimeter += 1
-                end
-
-            end
-    
+            land = Set{Tuple{Int, Int}}()
+            push!(land, (i, j))
             if i > 1 && map[i-1, j] == label && visited[i-1, j] == false
-                (other_area, other_perimeter) = get_area_and_perimeter(i-1, j, sides)
-                area += other_area
-                perimeter += other_perimeter
+                union!(land, get_land(i-1, j))
             end
             if i < size(map, 1) && map[i+1, j] == label && visited[i+1, j] == false
-                (other_area, other_perimeter) = get_area_and_perimeter(i+1, j, sides)
-                area += other_area
-                perimeter += other_perimeter
+                union!(land, get_land(i+1, j))
             end
             if j > 1 && map[i, j-1] == label && visited[i, j-1] == false
-                (other_area, other_perimeter) = get_area_and_perimeter(i, j-1, sides)
-                area += other_area
-                perimeter += other_perimeter
+                union!(land, get_land(i, j-1))
             end
             if j < size(map, 2) && map[i, j+1] == label && visited[i, j+1] == false
-                (other_area, other_perimeter) = get_area_and_perimeter(i, j+1, sides)
-                area += other_area
-                perimeter += other_perimeter
+                union!(land, get_land(i, j+1))
             end
 
-            return (area, perimeter)
+            return land
+        end
+
+        # computes the area of a piece of land
+        function get_area(land)
+            return length(land)
+        end
+
+        # computes the perimeter of a piece of land
+        function get_perimeter(land)
+            perimeter = 0
+            for (i, j) in land
+                if i == 1 || map[i-1, j] != label
+                    perimeter += 1
+                end
+                if i == size(map, 1) || map[i+1, j] != label
+                    perimeter += 1
+                end
+                if j == 1 || map[i, j-1] != label
+                    perimeter += 1
+                end
+                if j == size(map, 2) || map[i, j+1] != label
+                    perimeter += 1
+                end
+            end
+
+            return perimeter
         end
 
         price = 0
         for i in axes(map, 1)
             for j in axes(map, 2)
                 if map[i, j] == label && visited[i, j] == false
-                    (area, perimeter) = get_area_and_perimeter(i, j, Set{Symbol}())
+                    land = get_land(i, j)
+                    area = get_area(land)
+                    perimeter = get_perimeter(land)
                     println(label, ": ", area, " * ", perimeter, " = ", area * perimeter)
                     price += area * perimeter
                 end
