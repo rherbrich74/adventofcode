@@ -1,4 +1,4 @@
-# Solves the twelth day of the Advent of Code 2024
+# Solves the twelfth day of the Advent of Code 2024
 #
 # 2024 by Ralf Herbrich
 # Hasso Plattner Institute, University of Potsdam, Germany
@@ -146,19 +146,93 @@ function solution2(map)
 
         # computes the perimeter of a piece of land
         function get_perimeter(land)
+            # store all the fences
+            fence = Set{Tuple{Int, Int, Symbol}}()
+
+            # construct the fence around the perimeter of the land and count every piece 
             perimeter = 0
             for (i, j) in land
+                # determine the perimeter for the piece of land at (i, j)
                 if i == 1 || map[i-1, j] != label
+                    push!(fence, (i, j, :up))
                     perimeter += 1
                 end
                 if i == size(map, 1) || map[i+1, j] != label
+                    push!(fence, (i, j, :down))
                     perimeter += 1
                 end
                 if j == 1 || map[i, j-1] != label
+                    push!(fence, (i, j, :left))
                     perimeter += 1
                 end
                 if j == size(map, 2) || map[i, j+1] != label
+                    push!(fence, (i, j, :right))
                     perimeter += 1
+                end
+            end
+
+            # remove all the fences that are on the same straight line
+            while !isempty(fence)
+                (i, j, direction) = first(fence)
+                delete!(fence, (i, j, direction))
+                if direction == :up
+                    k = 1
+                    while ((i, j+k, :up) in fence)
+                        delete!(fence, (i, j+k, :up))
+                        perimeter -= 1
+                        k += 1
+                    end
+                    k = 1
+                    while ((i, j-k, :up) in fence)
+                        delete!(fence, (i, j-k, :up))
+                        perimeter -= 1
+                        k += 1
+                    end
+                end
+
+                if direction == :down
+                    k = 1
+                    while ((i, j+k, :down) in fence)
+                        delete!(fence, (i, j+k, :down))
+                        perimeter -= 1
+                        k += 1
+                    end
+                    k = 1
+                    while ((i, j-k, :down) in fence)
+                        delete!(fence, (i, j-k, :down))
+                        perimeter -= 1
+                        k += 1
+                    end
+                end
+
+                if direction == :left
+                    k = 1
+                    while ((i+k, j, :left) in fence)
+                        delete!(fence, (i+k, j, :left))
+                        perimeter -= 1
+                        k += 1
+                    end
+                    k = 1
+                    while ((i-k, j, :left) in fence)
+                        delete!(fence, (i-k, j, :left))
+                        perimeter -= 1
+                        k += 1
+                    end
+                end
+
+                if direction == :right
+                    k = 1
+                    while ((i+k, j, :right) in fence)
+                        delete!(fence, (i+k, j, :right))
+                        perimeter -= 1
+                        k += 1
+                    end
+                    k = 1
+                    while ((i-k, j, :right) in fence)
+                        delete!(fence, (i-k, j, :right))
+                        perimeter -= 1
+                        k += 1
+                    end
                 end
             end
 
@@ -172,13 +246,10 @@ function solution2(map)
                     land = get_land(i, j)
                     area = get_area(land)
                     perimeter = get_perimeter(land)
-                    println(label, ": ", area, " * ", perimeter, " = ", area * perimeter)
                     price += area * perimeter
                 end
             end
         end
-
-        print("Price for ", label, " = ", price, "\n")
         return price
     end
 
@@ -191,7 +262,7 @@ function solution2(map)
     return sum
 end
 
-map = read_input("/Users/rherbrich/src/adventofcode/2024/day12/test1.txt")
+map = read_input("/Users/rherbrich/src/adventofcode/2024/day12/input.txt")
 
 println("Solution 1 = ", solution1(map))
 println("Solution 2 = ", solution2(map))
