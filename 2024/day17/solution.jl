@@ -77,7 +77,7 @@ end
 
 # executes the next instruction
 function print_program(machine)
-    function combo_operand(operand)
+    function print_combo_operand(operand)
         if operand <= 3
             print(operand)
         elseif operand == 4
@@ -91,18 +91,19 @@ function print_program(machine)
         end
     end
 
+    pc = machine.pc
     while true
         opcode = machine.program[machine.pc + 1]
         operand = machine.program[machine.pc + 2]    
         if opcode == 0
             print("SHR A, ")
-            print(combo_operand(operand))
+            print_combo_operand(operand)
         elseif opcode == 1
             print("XOR B, ")
             print(operand)
         elseif opcode == 2
             print("MOV B, ")
-            print(combo_operand(operand))
+            print_combo_operand(operand)
             print(" & 0x7")
         elseif opcode == 3
             print("JNZ ")
@@ -111,19 +112,20 @@ function print_program(machine)
             print("XOR B, C")
         elseif opcode == 5
             print("OUT ")
-            print(combo_operand(operand))
+            print_combo_operand(operand)
             print(" & 0x7")
         elseif opcode == 6
             print("SHR B, ")
-            print(combo_operand(operand))
+            print_combo_operand(operand)
         elseif opcode == 7
             print("SHR C, ")
-            print(combo_operand(operand))
+            print_combo_operand(operand)
         end
         println()
 
         machine.pc += 2
         if machine.pc == length(machine.program)
+            machine.pc = pc
             break
         end
     end
@@ -131,7 +133,7 @@ end
 
 # solves the first part of the puzzle
 function solution1(machine)
-    output = []
+    output = Vector{Int}()
     while execute(machine, output)
     end
 
@@ -140,31 +142,57 @@ end
 
 # solves the second part of the puzzle
 function solution2(machine)
-    print_program(machine)
-    # # for regA in 300000000000000:300000000000010
-    # sum = 0
-    # n = length(machine.program)
-    # for i in n:-1:1
-    #     sum *= 8
-    #     sum += machine.program[i]
-    # end
-    # println("Sum = ", sum)
+    # evaluates the program with the given registers
+    function eval(a, b, c) 
+        machine.regA = a
+        machine.regB = b
+        machine.regC = c
+        machine.pc = 0
+        output = Vector{Int}()
+        while execute(machine, output)
+        end
+        return output
+    end
 
-    # for regA in 0:8^3-1
-    #     mach = deepcopy(machine)
-    #     mach.regA = regA
-    #     output = Vector{Int}()
-    #     while execute(mach, output)
-    #     end
+    solution = nothing
 
-    #     println("RegA = ", regA, " [", length(output), "]: ", join(string.(output), ","))
+    # recursively finds the values from right to left
+    function find_values(a, idx)
+        function matches_from_end(output, idx)
+            if length(output) < idx || length(machine.program) < idx
+                return false
+            end
 
-    #     if output == machine.program
-    #         return regA
-    #     end
-    # end
+            for i in 1:idx
+                if output[i] != machine.program[end - idx + i]
+                    return false
+                end
+            end
+            return true
+        end
 
-    # return -1
+        output = eval(a, 0, 0)
+        if output == machine.program
+            if isnothing(solution)
+                solution = a
+            else
+                solution = min(solution, a)
+            end
+            return
+        end
+
+        if idx == 0 || matches_from_end(output, idx)
+            for n in 0:7
+                find_values(a * 8 + n, idx + 1)
+            end
+            return 
+        end
+    end
+
+    # print_program(machine)
+
+    find_values(0, 0)
+    return solution
 end
 
 machine = read_input("/Users/rherbrich/src/adventofcode/2024/day17/input.txt")
