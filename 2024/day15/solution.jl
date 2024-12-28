@@ -37,8 +37,8 @@ end
 
 # find the starting position
 function find_start(maze)
-    for y in 1:size(maze, 1)
-        for x in 1:size(maze, 2)
+    for y in axes(maze, 1)
+        for x in axes(maze, 2)
             if maze[y, x] == '@'
                 return x, y
             end
@@ -48,8 +48,8 @@ end
 
 # prints a maze opn the screem
 function print_maze(maze)
-    for y in 1:size(maze, 1)
-        for x in 1:size(maze, 2)
+    for y in axes(maze, 1)
+        for x in axes(maze, 2)
             print(maze[y, x])
         end
         println()
@@ -148,8 +148,8 @@ function solution1(maze_worker)
     # computes the score of a maze
     function compute_score(maze)
         score = 0
-        for y in 1:size(maze, 1)
-            for x in 1:size(maze, 2)
+        for y in axes(maze, 1)
+            for x in axes(maze, 2)
                 if maze[y, x] == 'O'
                     score += (100*(y-1) + (x-1))
                 end
@@ -390,8 +390,8 @@ function solution2(maze_worker)
     # computes the score of a maze
     function compute_score(maze)
         score = 0
-        for y in 1:size(maze, 1)
-            for x in 1:size(maze, 2)
+        for y in axes(maze, 1)
+            for x in axes(maze, 2)
                 if maze[y, x] == '['
                     score += (100*(y-1) + (x-1))
                 end
