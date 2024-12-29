@@ -35,7 +35,7 @@ function solution1(seeds)
 end
 
 # solves the second part of the puzzle
-function solution2(maze)
+function solution2(seeds)
     # determines the bidding prizes in the 2000 evolutions
     function get_prizes(seed)
         prizes = Vector{Int}()
