@@ -3,8 +3,6 @@
 # 2024 by Ralf Herbrich
 # Hasso Plattner Institute, University of Potsdam, Germany
 
-using DataStructures
-
 # reads the input data from a file
 function read_input(filename)
     open(filename) do file
